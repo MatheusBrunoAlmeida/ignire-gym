@@ -12,9 +12,9 @@ import { Platform } from "react-native";
 
 type AppRoutes = {
     home: undefined;
-    exercise: undefined;
-    history: undefined;
+    exercise: { exerciseId: string };
     profile: undefined;
+    history: undefined;
 }
 
 export type AppNavigatorRoutesPorps = BottomTabNavigationProp<AppRoutes>
@@ -37,7 +37,7 @@ export function AppRoutes() {
             tabBarStyle: {
                 backgroundColor: tokens.colors.gray600,
                 borderTopWidth: 0,
-                height: Platform.OS === "android" ? "auto" : 96,
+                height: Platform.OS === "android" ? 80 : 96,
                 paddingBottom: tokens.space["10"],
                 paddingTop: tokens.space["6"],
             }
@@ -46,7 +46,7 @@ export function AppRoutes() {
                 name="home"
                 component={Home}
                 options={{
-                    tabBarIcon: ({ color }) => <HomeSvg fill={color} width={iconSize} height={iconSize} />
+                    tabBarIcon: ({ color }) => <HomeSvg fill={color} width={iconSize} height={iconSize} />,
                 }}
             />
 
@@ -54,7 +54,17 @@ export function AppRoutes() {
                 name="history"
                 component={History}
                 options={{
-                    tabBarIcon: ({ color }) => <HistorySvg fill={color} width={iconSize} height={iconSize} />
+                    tabBarIcon: ({ color }) => <HistorySvg fill={color} width={iconSize} height={iconSize} />,
+                }}
+            />
+            <Screen
+                name="exercise"
+                component={Exercise}
+                options={{
+                    tabBarButton: () => null,
+                    tabBarStyle: {
+                        display: 'none'
+                    }
                 }}
             />
 
@@ -66,13 +76,6 @@ export function AppRoutes() {
                 }}
             />
 
-            <Screen
-                name="exercise"
-                component={Exercise}
-                options={{
-                    tabBarButton: () => null,
-                }}
-            />
 
         </Navigator>
     )

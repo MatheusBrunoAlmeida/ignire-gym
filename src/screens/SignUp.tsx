@@ -1,4 +1,4 @@
-import { VStack, Image, Center, Heading, ScrollView } from "@gluestack-ui/themed";
+import { VStack, Image, Center, Heading, ScrollView, useToast } from "@gluestack-ui/themed";
 
 import BackgroundImg from "../assets/background.png"
 import Logo from "../assets/logo.svg"
@@ -11,7 +11,13 @@ import { Controller, useForm } from "react-hook-form";
 import { Platform } from "react-native";
 
 import * as yup from 'yup'
-import { yupResolver } from  '@hookform/resolvers/yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { api } from "../service/api";
+import axios from "axios";
+import { AppError } from "../utils/AppError";
+import { ToastMessage } from "../components/ToastMessage";
+import { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 
 
 type FormDataProps = {
@@ -31,6 +37,9 @@ const signUpSchema = yup.object({
 
 export default function SignUp() {
     const navigaton = useNavigation<AuthNavigatorRoutesProps>()
+    const toast = useToast()
+    const [isLoading, setIsLoading] = useState(false)
+    const { signIn } = useAuth()
 
     const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
         resolver: yupResolver(signUpSchema)
@@ -40,22 +49,30 @@ export default function SignUp() {
         navigaton.goBack()
     }
 
-    async function handleSignUp({email, name, password}: FormDataProps) {
-        const response = await fetch('http://192.168.1.8:3333/users', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name,
-                email,
-                password
-            })
-        })
+    async function handleSignUp({ email, name, password }: FormDataProps) {
+        try {
+            setIsLoading(true)
+            await api.post('/users', { name, email, password })
 
-        const data = await response.json()
-        console.log(data)
+            await signIn(email, password)
+
+        } catch (error) {
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'Não foi possivel criar a conta. tente novamente mais tarde.'
+            setIsLoading(false)
+            return toast.show({
+                placement: "top",
+                render: ({ id }) => (
+                    <ToastMessage
+                        id={id}
+                        action="error"
+                        title="Erro ao criar conta"
+                        description={title}
+                        onClose={() => toast.close(id)}
+                    />
+                )
+            })
+        }
     }
 
     return (
@@ -142,7 +159,7 @@ export default function SignUp() {
                             )}
                         />
 
-                        <Button onPress={handleSubmit(handleSignUp)} title="Criar e acessar" />
+                        <Button isLoading={isLoading} onPress={handleSubmit(handleSignUp)} title="Criar e acessar" />
                     </Center>
 
                     <Button onPress={handleGoBack} title="Voltar para login" variant="outline" mt="$12" />

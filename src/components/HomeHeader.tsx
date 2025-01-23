@@ -1,12 +1,17 @@
 import { Heading, HStack, Icon, Text, VStack } from "@gluestack-ui/themed";
 import { UserPhoto } from "./UserPhoto";
 import { LogOut } from "lucide-react-native";
+import { useAuth } from "../hooks/useAuth";
+
+import defaultUserPhoto from '../assets/userPhotoDefault.png'
+import { TouchableOpacity } from "react-native";
 
 export function HomeHeader() {
+    const { user, signOut } = useAuth()
     return (
         <HStack bg="$gray600" pt="$16" pb="$5" px="$8" alignItems="center" gap="$4">
             <UserPhoto
-                source={{ uri: "https://github.com/matheusbrunoalmeida.png" }}
+                source={user.avatar ? { uri: user.avatar } : defaultUserPhoto}
                 alt="Imagem do úsuario"
                 w="$16"
                 h="$16"
@@ -18,10 +23,12 @@ export function HomeHeader() {
                 >
                     Olá,
                 </Text>
-                <Heading color="$gray100" fontSize="$md">Matheus Bruno Almeida</Heading>
+                <Heading color="$gray100" fontSize="$md">{user.name}</Heading>
             </VStack>
 
-            <Icon as={LogOut} color="$gray200" size="xl"/>
+            <TouchableOpacity onPress={signOut}>
+                <Icon as={LogOut} color="$gray200" size="xl" />
+            </TouchableOpacity>
         </HStack>
     )
 }
